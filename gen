@@ -1,0 +1,5 @@
+#! /bin/sh
+xsel -b > x.adj
+./a2g.py
+./g2s.py
+cat o.graph | sage -python factor.py
