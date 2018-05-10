@@ -4,56 +4,80 @@ import sys
 from sage.all import *
 import itertools as it
 
+global Airec
+global AirecP
+global Zirec
+global si
+si=0
+Airec=[]
+AirecP=[]
+Zirec=[]
+
+def NofX(X,G):
+    NofX=[]
+    for x in X:
+        Nx=[]
+        Nx=G.neighbors(x)
+        for nx in Nx:
+            if nx not in X:
+                if nx not in NofX:
+                    NofX.append(nx)
+    return NofX
+
+def countNinC(u,C,G):
+    count=0
+    Nu=G.neighbors(u)
+    for nu in Nu:
+        if nu in C:
+            count=count+1
+    return count
+
+
 def cost(s,G,V,n,bestSolution):
-    print('trying the solution: ')
-    print(s)
-    print('while the best one is: '+str(bestSolution))
+    global Zirec
+    global Airec
+    global si
     cost=0
-    t=True
-    while cost<bestSolution and t:
-        Ai=[]
-        Zi=[]
-        Yi=[]
-        i=0
-        while i<(n-1):
-            vi=V[i]
-            Yi=[]
-            for u in Ai:
-                P=G.all_paths(vi,u)
-                #problem is that the lenght at first is one but later cannot be one
-                #ie in case of a square the third searched vertex we need to remove
-                #the second searched vertex
-                for p in P:
-                    if len(p)>1:
-                        for x in range(1,len(p)):
-                            if (p[x] in Ai) and p[x]!=vi and x<len(p):
-                                firstGuardIndex=p.index(p[x])
-                                break
-                            x=x+1
-                        if not(p[firstGuardIndex] in Yi):
-                            Yi.append(p[firstGuardIndex])
-            Ai.append(vi)
-            print('at interval: '+ str(i)+ ' Ai is: '+ str(Ai))
-            Zi=Yi
-            Zi.append(vi)
-            print('at interval: '+ str(i)+ ' Zi is: '+ str(Zi))
+    busy=True
+    thisAirec=[]
+    thisZirec=[]
+    Ai=[]
+    Zi=[]
+    Yi=[]
+    i=0
+    while i<=(n-1) and busy:
+        vi=V[s[i]]
+        Gcopy=copy(G)
+        Gcopy.delete_vertices(Ai)
+        vc=Gcopy.connected_component_containing_vertex(vi)
+        nofx=NofX(vc,G)
+        Zi=nofx
+        thisZirec.append(Zi)
+        Ai.append(vi)
+        thisAirec.append(Ai)
+        if cost+len(Zi)>=bestSolution:
+            cost=99999999
+            si=i
+            AirecP=Ai
+            busy=False
+        else:
             cost=cost+len(Zi)
-            i=i+1
-        t=False
+        i=i+1
     if cost<bestSolution:
+        Airec=Ai
+        Zirec=thisZirec
         return cost
     else:
         return bestSolution
 
+#init
 i="o"
 iending='.graph'
 finfilename=i+iending
 fin=open(finfilename,"r")
-
 thisEntry=""
 text=""
 G=Graph({})
-
 graph=fin.readlines()
 for e in range(0, len(graph)):
     thisE=graph[e]
@@ -68,17 +92,24 @@ for e in range(0, len(graph)):
     else:
         G.add_vertices([int(endpoint2)])
         G.add_edge((int(thisEntry),int(endpoint2)))
-
-print(G.adjacency_matrix())
-
 V=G.vertices()
 n=len(V)
+#calculations
 solutions=list(it.permutations(V))
 bestSolution=-1
 if len(solutions)>0:
     s=solutions[0]
-    bestSolution=cost(s,G,V,n,999999)
+    bestSolution=cost(s,G,V,n,99999999)
 for sIndex in range(1,len(solutions)):
     s=solutions[sIndex]
-    bestSolution=cost(s,G,V,n,bestSolution)
+    new=False
+    for pos in range(0,si):
+        if s[pos]!=AirecP[pos]:
+            new=True
+    if new:
+        bestSolution=cost(s,G,V,n,bestSolution)
 print('best solution has cost: '+str(bestSolution))
+print('Zi:')
+print(Zirec)
+print('Ai:')
+print(Airec)
