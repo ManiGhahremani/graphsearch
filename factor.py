@@ -8,6 +8,7 @@ global Airec
 global AirecP
 global Zirec
 global si
+global badsolution
 si=0
 Airec=[]
 AirecP=[]
@@ -37,6 +38,7 @@ def cost(s,G,V,n,bestSolution):
     global Zirec
     global Airec
     global si
+    global badsolution
     cost=0
     busy=True
     thisAirec=[]
@@ -45,19 +47,31 @@ def cost(s,G,V,n,bestSolution):
     Zi=[]
     Yi=[]
     i=0
-    while i<=(n-1) and busy:
+    while i<(n-1) and busy:
+        Zi=[]
         vi=V[s[i]]
         Gcopy=copy(G)
         Gcopy.delete_vertices(Ai)
         vc=Gcopy.connected_component_containing_vertex(vi)
         nofx=NofX(vc,G)
-        Zi=nofx
+        for candid in nofx:
+            nofCandid=[]
+            nofCandid=G.neighbors(candid)
+            if vi in nofCandid:
+                nofCandid.remove(vi)
+            for vvc in nofCandid:
+                if vvc not in vc:
+                    nofCandid.remove(vvc)
+            if len(nofCandid)>0 and candid not in Zi:
+                Zi.append(candid)
+        Zi.append(vi)
         thisZirec.append(Zi)
         Ai.append(vi)
         thisAirec.append(Ai)
         if cost+len(Zi)>=bestSolution:
             cost=99999999
             si=i
+            badsolution=s
             AirecP=Ai
             busy=False
         else:
@@ -94,6 +108,8 @@ for e in range(0, len(graph)):
         G.add_edge((int(thisEntry),int(endpoint2)))
 V=G.vertices()
 n=len(V)
+pic=G.plot()
+pic.save('pic.png')
 #calculations
 solutions=list(it.permutations(V))
 bestSolution=-1
@@ -104,7 +120,7 @@ for sIndex in range(1,len(solutions)):
     s=solutions[sIndex]
     new=False
     for pos in range(0,si):
-        if s[pos]!=AirecP[pos]:
+        if s[pos]!=badsolution[pos]:
             new=True
     if new:
         bestSolution=cost(s,G,V,n,bestSolution)
