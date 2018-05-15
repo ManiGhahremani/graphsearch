@@ -45,7 +45,7 @@ def Zigen(vi,Ai,G):
     Zi=[]
     #check if vi is already clean
     if vi not in Ai:
-        raise ValueError('('!!!!!!!!!!!!!!!Ai %s does not contain vi %d' % (Ai,int(vi)))
+        raise ValueError('!!!!!!!!!!!!!!!Ai %s does not contain vi %d' % (Ai,int(vi)))
     #define the dirty area in which f can awake after placing s on vi
     vc=Compvi(vi,Ai,G)
     #N(vc) is the border of the dirty area
