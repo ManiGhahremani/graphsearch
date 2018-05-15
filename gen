@@ -2,5 +2,5 @@
 xsel -b > x.adj
 ./a2g.py
 ./g2s.py
-cat o.graph | sage -python factor.py
+cat o.graph | sage -python minc.py
 xdg-open pic.png
