@@ -2,5 +2,5 @@
 xsel -b > x.adj
 ./a2g.py
 ./g2s.py
-cat o.graph | sage -python minsc.py
+cat o.graph | time sage -python minsc.py
 xdg-open pic.png

@@ -5,6 +5,10 @@ from sage.all import *
 import itertools as it
 
 global bests
+global bads
+global badsi
+global Zirec
+Zirec=[]
 
 def NofX(X,G):
     NofX=[]
@@ -24,6 +28,10 @@ def Compvi(vi,Ai,G):
 
 def cost(s,G,V,n,bestSolution):
     global bests
+    global bads
+    global badsi
+    global Zirec
+    thisZirec=[]
     print('Solution is %s and bestSolution is %d' % (s,int(bestSolution)))
     Ai=[]
     cost=0
@@ -45,24 +53,31 @@ def cost(s,G,V,n,bestSolution):
             if count>0 and c not in Zi:
                 Zi.append(c)
         Zi.append(vi)
+        thisZireccopy=thisZirec
+        thisZireccopy.append(Zi)
+        thisZirec=thisZireccopy
         print('     Ai is %s at %d' % (Ai,int(i)))
         print('     Zi is %s at %d' % (Zi,int(i)))
         if cost+len(Zi)>=bestSolution:
+            bads=s
+            badsi=i
             cost=99999999
             busy=False
         else:
             cost=cost+len(Zi)
         i=i+1
     if cost<bestSolution:
-        bests=s
+        Ai.append(V[s[len(s)-1]])
+        bests=Ai
+        Zirec=thisZirec
         return cost
     else:
         return bestSolution
 
 #init
-i="o"
+inname="o"
 iending='.graph'
-finfilename=i+iending
+finfilename=inname+iending
 fin=open(finfilename,"r")
 thisEntry=""
 text=""
@@ -87,12 +102,20 @@ pic=G.plot()
 pic.save('pic.png')
 
 #calculations
-solutions=list(it.permutations(V))
+solutions=sorted(list(it.permutations(V)))
 bestSolution=0
 if len(solutions)>0:
     s=solutions[0]
     bestSolution=cost(s,G,V,n,99999999)
+    bads=s
+    badsi=len(bads)-1
 for sIndex in range(1,len(solutions)):
     s=solutions[sIndex]
-    bestSolution=cost(s,G,V,n,bestSolution)
+    new=False
+    for p in range(badsi+1):
+        if not(s[p]==bads[p]):
+            new=True
+    if new==True:
+        bestSolution=cost(s,G,V,n,bestSolution)
 print('Best solution has cost %d and is %s' % (bestSolution, bests))
+print(Zirec)
