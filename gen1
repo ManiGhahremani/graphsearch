@@ -1,0 +1,6 @@
+#! /bin/sh
+pbpaste > x.adj
+./a2g.py
+./g2s.py
+cat o.graph | time sage -python minsc.py
+open pic.png
