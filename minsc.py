@@ -1,12 +1,9 @@
 #!/usr/bin/env sage
-
 import sys
 from sage.all import *
-import itertools as it
+from itertools import permutations
 
 global bests
-global bads
-global badsi
 global Zirec
 Zirec=[]
 
@@ -28,46 +25,34 @@ def Compvi(vi,Ai,G):
 
 def cost(s,G,V,n,bestSolution):
     global bests
-    global bads
-    global badsi
     global Zirec
     thisZirec=[]
-    print('Solution is %s and bestSolution is %d' % (s,int(bestSolution)))
+    #print('Solution is %s and bestSolution is %d' % (s,int(bestSolution)))
     Ai=[]
     cost=0
     busy=True
     i=0
-    while i<n-1 and busy:
+    while i<n and busy:
         Zi=[]
         vi=V[s[i]]
         vc=Compvi(vi,Ai,G)
-        Ai.append(vi)
-        candids=[]
-        candids=NofX(vc,G)
-        for c in candids:
-            count=0
-            neighbors=G.neighbors(c)
-            for neighbor in neighbors:
-                if not(neighbor==vi) and neighbor not in Ai:
-                    count=count+1
-            if count>0 and c not in Zi:
-                Zi.append(c)
-        Zi.append(vi)
+        Nvc=[]
+        Nvc=NofX(vc,G)
+        for guard in Nvc:
+            Zi.append(guard)
         thisZireccopy=thisZirec
         thisZireccopy.append(Zi)
         thisZirec=thisZireccopy
-        print('     Ai is %s at %d' % (Ai,int(i)))
-        print('     Zi is %s at %d' % (Zi,int(i)))
+        Ai.append(vi)
+        #print('     Ai is %s at %d' % (Ai,int(i)))
+        #print('     Zi is %s at %d' % (Zi,int(i)))
         if cost+len(Zi)>=bestSolution:
-            bads=s
-            badsi=i
             cost=99999999
             busy=False
         else:
             cost=cost+len(Zi)
         i=i+1
     if cost<bestSolution:
-        Ai.append(V[s[len(s)-1]])
         bests=Ai
         Zirec=thisZirec
         return cost
@@ -102,20 +87,18 @@ pic=G.plot()
 pic.save('pic.png')
 
 #calculations
+progress=0
 solutions=sorted(list(it.permutations(V)))
-bestSolution=0
-if len(solutions)>0:
-    s=solutions[0]
-    bestSolution=cost(s,G,V,n,99999999)
-    bads=s
-    badsi=len(bads)-1
-for sIndex in range(1,len(solutions)):
+O=len(solutions)
+bestSolution=99999999
+for sIndex in range(0,O):
+    newprogress=(sIndex*100)/O
+    if not(newprogress==progress):
+        progress=newprogress
+        sys.stdout.write("\033[F")
+        sys.stdout.write("\033[K")
+        print('progress: %d' % progress)
     s=solutions[sIndex]
-    new=False
-    for p in range(badsi+1):
-        if not(s[p]==bads[p]):
-            new=True
-    if new==True:
-        bestSolution=cost(s,G,V,n,bestSolution)
+    bestSolution=cost(s,G,V,n,bestSolution)
 print('Best solution has cost %d and is %s' % (bestSolution, bests))
 print(Zirec)
