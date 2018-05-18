@@ -1,11 +1,23 @@
 #!/usr/bin/env sage
+from __future__ import generators
 import sys
 from sage.all import *
-from itertools import permutations
+import itertools as it
+import math
 
 global bests
 global Zirec
 Zirec=[]
+
+def xcombinations(itemsx, nx):
+    if nx==0: yield []
+    else:
+        for ix in xrange(len(itemsx)):
+            for ccx in xcombinations(itemsx[:ix]+itemsx[ix+1:],nx-1):
+                yield [itemsx[ix]]+ccx
+
+def xpermutations(itemsx):
+    return xcombinations(itemsx, len(itemsx))
 
 def NofX(X,G):
     NofX=[]
@@ -87,18 +99,31 @@ pic=G.plot()
 pic.save('pic.png')
 
 #calculations
+#progress=0
+#solutions=sorted(list(it.permutations(V)))
+#O=len(solutions)
+#bestSolution=99999999
+#for sIndex in range(0,O):
+#    newprogress=(sIndex*100)/O
+#    if not(newprogress==progress):
+#        progress=newprogress
+#        sys.stdout.write("\033[F")
+#        sys.stdout.write("\033[K")
+#        print('progress: %d' % progress)
+#    s=solutions[sIndex]
+#    bestSolution=cost(s,G,V,n,bestSolution)
 progress=0
-solutions=sorted(list(it.permutations(V)))
-O=len(solutions)
 bestSolution=99999999
-for sIndex in range(0,O):
-    newprogress=(sIndex*100)/O
+counter=0
+O=math.factorial(n)
+for p in list(xpermutations(V)):
+    counter=counter+1
+    newprogress=(counter*100)/O
     if not(newprogress==progress):
         progress=newprogress
         sys.stdout.write("\033[F")
         sys.stdout.write("\033[K")
         print('progress: %d' % progress)
-    s=solutions[sIndex]
-    bestSolution=cost(s,G,V,n,bestSolution)
+    bestSolution=cost(p,G,V,n,bestSolution)
 print('Best solution has cost %d and is %s' % (bestSolution, bests))
 print(Zirec)
